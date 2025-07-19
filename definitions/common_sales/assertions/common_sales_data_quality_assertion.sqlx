@@ -1,0 +1,21 @@
+config {
+  type: "assertion",
+  name: "common_sales_data_quality_assertion",
+  description: "Assertion that test if the rows extracted from the Transactions data source matches the ones from the resulted Common Sales table.",
+  tags: [tags.common_sales]
+}
+
+SELECT
+  'Row count mismatch between transactions and common_sales' AS failing_row_condition,
+  transactions_count,
+  transactions_invoice_total,
+  common_sales_count,
+  common_sales_invoice_total
+FROM (
+  SELECT
+    (SELECT COUNT(*) FROM ${ref("transactions")}) AS transactions_count,
+    (SELECT SUM(invoice_total) FROM ${ref("transactions")}) AS transactions_invoice_total,
+    (SELECT COUNT(*) FROM ${ref("common_sales")}) AS common_sales_count,
+    (SELECT SUM(invoice_total) FROM ${ref("common_sales")}) AS common_sales_invoice_total
+)
+WHERE transactions_count != common_sales_count OR ROUND(transactions_invoice_total) != ROUND(common_sales_invoice_total)
