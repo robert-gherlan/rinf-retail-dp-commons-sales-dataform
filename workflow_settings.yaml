@@ -1,0 +1,5 @@
+defaultProject: rinf-retail-dp-commons-sales
+defaultLocation: EU
+defaultDataset: dataform
+defaultAssertionDataset: dataform_assertions
+dataformCoreVersion: 3.0.25
