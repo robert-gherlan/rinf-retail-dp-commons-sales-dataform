@@ -1,0 +1,36 @@
+config {
+  type: "operations",
+  schema: "common_sales",
+  name: "common_sales_monthly_reporting_store_sales_forecasting_model",
+  description: "The Common Sales monthly forecasting model using the ARIMA_PLUS_XREG ML model.",
+  hasOutput: true,
+  tags: [tags.common_sales]
+}
+
+-- https://cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-create-time-series
+-- https://cloud.google.com/bigquery/docs/reference/standard-sql/bigqueryml-syntax-create-multivariate-time-series
+
+CREATE OR REPLACE MODEL ${self()}
+OPTIONS (
+  MODEL_TYPE = 'ARIMA_PLUS_XREG',
+  TIME_SERIES_ID_COL = ['store_id', 'store_name', 'country_name'],
+  TIME_SERIES_DATA_COL = 'sales_amount_usd',
+  TIME_SERIES_TIMESTAMP_COL = 'first_day_of_the_month',
+  AUTO_ARIMA_MAX_ORDER = 5,
+  DATA_FREQUENCY = 'MONTHLY',
+  HORIZON = 10000,
+  AUTO_ARIMA = TRUE,
+  CLEAN_SPIKES_AND_DIPS = TRUE,
+  ADJUST_STEP_CHANGES = TRUE,
+  TIME_SERIES_LENGTH_FRACTION = 1
+) AS
+
+SELECT
+  store_id,
+  store_name,
+  country_name,
+  first_day_of_the_month,
+  SUM(quantity) AS quantity,
+  SUM(sales_amount_usd) AS sales_amount_usd
+FROM ${ref("common_sales_monthly_reporting")}
+GROUP BY ALL

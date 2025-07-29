@@ -1,0 +1,6 @@
+config {
+  type: "declaration",
+  database: "rinf-retail-dp-commons-sales",
+  schema: "ingestion",
+  name: "raw_usd_exchange_rates_daily",
+}

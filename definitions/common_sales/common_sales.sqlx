@@ -6,12 +6,14 @@ config {
   columns: {
     transaction_date: "The data when the transaction happened.",
     transaction_date_time: "The date and time when the transaction happened.",
-    invoice_id: "Invoice ID",
+    invoice_id: "Transaction Invoice ID",
     line: "Transaction line"
   },
   assertions: {
-    nonNull: ["invoice_id"],
+    nonNull: ["invoice_id", "payment_method", "transaction_type"],
     rowConditions: [
+      "payment_method IN ('Credit Card', 'Cash')",
+      "transaction_type IN ('Return', 'Sale')",
       "currency IS NOT NULL AND currency IN ('CNY', 'EUR', 'USD', 'GBP')",
       "currency_symbol IS NOT NULL AND currency_symbol IN ('£', '¥', '€', '$')",
       "(currency = 'EUR' AND currency_symbol = '€') OR (currency = 'CNY' AND currency_symbol = '¥') OR (currency = 'USD' AND currency_symbol = '$') OR (currency = 'GBP' AND currency_symbol = '£')"
@@ -24,7 +26,7 @@ config {
 }
 
 SELECT
-  -- Start transactionrelated data
+  -- Start transaction related data
   CAST(t.transaction_date_time AS DATE) AS transaction_date,
   t.transaction_date_time,
   t.invoice_id,
@@ -33,10 +35,6 @@ SELECT
   t.product_id,
   t.size,
   t.color,
-  t.unit_price,
-  t.quantity,
-  t.discount,
-  t.line_total,
   t.store_id,
   t.employee_id,
   t.currency,
@@ -44,7 +42,13 @@ SELECT
   t.sku,
   t.transaction_type,
   t.payment_method,
+  t.unit_price,
+  t.quantity,
+  t.discount,
+  t.line_total,
   t.invoice_total,
+  -- Start exchange rate
+  e.exchange_rate,
   -- Start product related data
   p.category AS product_category,
   p.sub_category AS product_sub_category,
@@ -72,9 +76,10 @@ SELECT
   s.gps_coordinates
 FROM ${ref("transactions")} t
 LEFT JOIN ${ref("customers")} c USING (customer_id)
-LEFT JOIN ${ref("stores")} s USING (store_id)
+LEFT JOIN ${ref("stores_dim")} s USING (store_id)
 LEFT JOIN ${ref("products")} p USING (product_id)
 LEFT JOIN ${ref("discounts")} d ON d.category = p.category AND d.sub_category = p.sub_category AND t.transaction_date_time BETWEEN d.start_date AND d.end_date
+LEFT JOIN ${ref("usd_exchange_rates_daily")} e ON e.date = CAST(t.transaction_date_time AS DATE) AND e.currency = t.currency
 
 post_operations {
   GRANT `roles/bigquery.dataViewer` ON TABLE ${self()} TO "serviceAccount:sa-bigquery@rinf-retail-dp-commons-sales.iam.gserviceaccount.com", "user:gherlanilierobert@gmail.com"

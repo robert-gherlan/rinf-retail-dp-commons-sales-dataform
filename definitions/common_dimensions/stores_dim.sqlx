@@ -1,0 +1,43 @@
+config {
+  type: "table",
+  schema: "common_dimensions",
+  name: "stores_dim",
+  description: "The stores dimensions table that contains all the store related-data.",
+  assertions: {
+    uniqueKey: ["store_id"],
+    nonNull: ["store_name", "country_name", "zip_code", "gps_coordinates"],
+    rowConditions: [
+      "REGEXP_CONTAINS(country_code, r'^[A-Z]{2}$')"
+    ]
+  },
+  tags: [tags.common_dimensions]
+}
+
+WITH store_country_names AS (
+  SELECT 'Deutschland' AS store_country_name, 'Germany' AS country_name, 'DE' AS country_code, UNION ALL
+  SELECT 'España' AS store_country_name, 'Spain' AS country_name, 'ES' AS country_code, UNION ALL
+  SELECT 'France' AS store_country_name, 'France' AS country_name, 'FR' AS country_code UNION ALL
+  SELECT 'Portugal' AS store_country_name, 'Portugal' AS country_name, 'PT' AS country_code UNION ALL
+  SELECT 'United Kingdom' AS store_country_name, 'Great Britain' AS country_name, 'GB' AS country_code UNION ALL
+  SELECT 'United States' AS store_country_name, 'United States' AS country_name, 'US' AS country_code UNION ALL
+  SELECT '中国' AS store_country_name, 'China' AS country_name, 'CN' AS country_code
+), employees_count AS (
+  SELECT
+    store_id,
+    COUNT(store_id) AS employees_count
+  FROM ${ref("employees")}
+  GROUP BY ALL
+)
+
+SELECT
+  s.store_id,
+  s.store_name,
+  c.country_code,
+  c.country_name,
+  s.number_of_employees,
+  e.employees_count,
+  s.zip_code,
+  s.gps_coordinates
+FROM ${ref("stores")} s
+LEFT JOIN store_country_names c ON c.store_country_name = s.country_name
+LEFT JOIN employees_count e USING (store_id)
