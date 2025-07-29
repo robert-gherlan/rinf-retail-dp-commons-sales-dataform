@@ -1,0 +1,26 @@
+config {
+  type: "table",
+  schema: "exchange_rates",
+  name: "usd_exchange_rates_daily",
+  assertions: {
+    uniqueKey: ["date", "currency"],
+    nonNull: ["exchange_rate", "date"],
+    rowConditions: [
+      "exchange_rate > 0"
+    ]
+  },
+  tags: [tags.common_sales]
+}
+
+SELECT
+  CAST(date AS DATE) AS date,
+  currency,
+  CAST(exchange_rate AS NUMERIC) AS exchange_rate
+FROM ${ref("raw_usd_exchange_rates_daily")}
+UNPIVOT(exchange_rate FOR currency IN (
+    euro_to_usd AS 'EUR',
+    uk_pound_to_usd AS 'GBP',
+    us_dollar_to_usd AS 'USD',
+    chinese_yuan_to_usd AS 'CNY'
+  )
+)

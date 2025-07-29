@@ -1,0 +1,38 @@
+config {
+  type: "table",
+  schema: "common_sales",
+  name: "common_sales_monthly_reporting",
+  description: "The Common Sales table that contains all the sales data related of the retail store.",
+  assertions: {
+    nonNull: ["country_name", "store_name"],
+    rowConditions: [
+      "calendar_year BETWEEN 2023 AND 2025",
+      "product_category IN ('Feminine', 'Masculine', 'Children')"
+    ]
+  },
+  tags: [tags.common_sales]
+}
+
+SELECT
+  s.store_id,
+  s.store_name,
+  s.country_code,
+  s.country_name,
+  DATE_TRUNC(transaction_date, MONTH) AS first_day_of_the_month,
+  EXTRACT(YEAR FROM transaction_date) AS calendar_year,
+  currency,
+  transaction_type,
+  payment_method,
+  product_category,
+  SUM(quantity) AS quantity,
+  SUM(line_total) AS sales_amount,
+  SUM(line_total * exchange_rate) AS sales_amount_usd,
+  SUM(quantity * product_production_cost) AS production_cost_amount,
+  SUM(quantity * product_production_cost * exchange_rate) AS production_cost_amount_usd,
+  SUM(line_total) - SUM(quantity * product_production_cost) AS profit_amount,
+  SUM(line_total * exchange_rate) - SUM(quantity * product_production_cost * exchange_rate) AS profit_amount_usd,
+  ST_UNION_AGG(s.gps_coordinates) AS store_gps_coordinates
+FROM ${ref("common_sales")} cs
+LEFT JOIN ${ref("stores_dim")} s USING (store_id)
+GROUP BY ALL
+ORDER BY country_name, store_name, first_day_of_the_month

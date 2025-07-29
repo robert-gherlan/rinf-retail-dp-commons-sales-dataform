@@ -1,0 +1,6 @@
+config {
+  type: "declaration",
+  database: "rinf-retail-dp-customers",
+  schema: "customers",
+  name: "customers",
+}
