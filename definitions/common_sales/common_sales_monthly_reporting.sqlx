@@ -2,7 +2,27 @@ config {
   type: "table",
   schema: "common_sales",
   name: "common_sales_monthly_reporting",
-  description: "The Common Sales table that contains all the sales data related of the retail store.",
+  description: "The Common Sales table that contains the monthly sales aggregated data.",
+  columns: {
+    store_id: "The ID of the store where the transaction is associated with.",
+    store_name: "The name of the store where the transaction is associated with.",
+    country_code: "The two letter country code of the country where the transaction took place. Ex: ES for Spain country.",
+    country_name: "The name of the country where the transaction took place.",
+    first_day_of_the_month: "The first day of the month when the transaction took place.",
+    calendar_year: "The calendar year when the transaction took place. Now, we only have the sales data between 2023 and 2025.",
+    currency: "The currency code for the transaction.",
+    transaction_type: "The transaction type, and can have one of the following supported values: 'Sale' and 'Return'.",
+    payment_method: "The payment method, and can have one of the following supported values: 'Credit Card' and 'Cash'.",
+    product_category: "The category of the product that was sold and can have one of the following three values: 'Feminine', 'Masculine' and 'Children'.",
+    quantity: "The quantity of products that was sold.",
+    sales_amount: "The sales amount in local currency.",
+    sales_amount_usd: "The sales amount in USD currency.",
+    production_cost_amount: "The production cost amount in local currency.",
+    production_cost_amount_usd: "The production cost amount in USD currency.",
+    profit_amount: "The profit amount in the local currency.",
+    profit_amount_usd: "The profit amount in USD currency.",
+    store_gps_coordinates: "The GPS coordinates of the store."
+  },
   assertions: {
     nonNull: ["country_name", "store_name"],
     rowConditions: [
