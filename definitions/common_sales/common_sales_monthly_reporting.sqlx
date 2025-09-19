@@ -56,3 +56,7 @@ FROM ${ref("common_sales")} cs
 LEFT JOIN ${ref("stores_dim")} s USING (store_id)
 GROUP BY ALL
 ORDER BY country_name, store_name, first_day_of_the_month
+
+post_operations {
+  GRANT `roles/bigquery.dataViewer` ON TABLE ${self()} TO "serviceAccount:sa-bigquery@rinf-retail-dp-commons-sales.iam.gserviceaccount.com", "user:gherlanilierobert@gmail.com"
+}
