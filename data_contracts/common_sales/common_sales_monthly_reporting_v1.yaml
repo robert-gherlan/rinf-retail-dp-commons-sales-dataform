@@ -1,0 +1,271 @@
+dataContractSpecification: 1.2.0
+id: common-sales-monthly-reporting
+info:
+  title: Common Sales Monthly Reporting Data Contract
+  version: 1.0.0
+  description: The data contract for the Common Sales monthly reporting data model.
+  owner: Common Sales Team
+  contact:
+    name: Robert Gherlan
+    url: https://company_name.com/robert.gherlan
+    email: robert.gherlan@example.com
+
+
+servers:
+  production:
+    type: bigquery
+    environment: prod
+    project: rinf-retail-dp-commons-sales
+    dataset: common_sales
+    roles:
+      - name: analyst_us
+        description: Access to the data for US region
+      - name: analyst_cn
+        description: Access to the data for China region
+
+
+terms:
+  usage: |
+    Data can be used for reports, analytics and machine learning use cases.
+    Monthly sales data may be linked and joined by other tables.
+  limitations: |
+    Not suitable for real-time use cases, data being aggregated on a monthly basis.
+    Data may not be used to identify individual customers.
+    Max data processing per month: 1 GB
+  policies:
+    - name: privacy-policy
+      url: https://example.com/privacy-policy
+    - name: license
+      description: External data is licensed under agreement 1234.
+      url: https://example.com/license/1234
+  billing: 5000 USD per month
+  noticePeriod: P3M
+
+
+models:
+  common_sales_monthly_reporting:
+    description: The Common Sales table that contains the monthly sales aggregated data.
+    type: table
+    fields:
+      store_id:
+        $ref: '#/definitions/store_id'
+        type: integer
+        description: The ID of the store where the transaction is associated with.
+        examples:
+          - 31
+          - 32
+      store_name:
+        type: string
+        description: The name of the store where the transaction is associated with.
+        examples:
+          - Store Lisboa
+          - Store Sevilla
+        pii: true
+        classification: sensitive
+      country_code:
+        type: string
+        description: "The two letter country code of the country where the transaction took place. Ex: ES for Spain country."
+        examples:
+          - ES
+          - PT
+        quality:
+          - type: sql
+            description: Currency code must have only three letters
+            dialect: bigquery
+            query: |
+              SELECT DISTINCT CHARACTER_LENGTH(country_code) FROM common_sales_monthly_reporting
+            mustBe: 2
+      country_name:
+        type: string
+        description: The name of the country where the transaction took place.
+        examples:
+          - Spain
+          - Portugal
+      first_day_of_the_month:
+        type: date
+        description: The first day of the month that represents the month when the transaction took place.
+        examples:
+          - 2024-03-01
+          - 2024-05-01
+      calendar_year:
+        type: integer
+        description: The calendar year when the transaction took place. Now, we only have the sales data between 2023 and 2025.
+        examples:
+          - 2023
+          - 2025
+      currency:
+        type: string
+        description: The currency code for the transaction.
+        examples:
+          - EUR
+          - USD
+          - CNY
+        quality:
+          - type: sql
+            description: Currency code must have only three letters
+            dialect: bigquery
+            query: |
+              SELECT DISTINCT CHARACTER_LENGTH(currency) FROM common_sales_monthly_reporting
+            mustBe: 3
+          - type: sql
+            description: Only four currencies are allowed
+            dialect: bigquery
+            query: |
+              SELECT COUNT(DISTINCT currency) FROM common_sales_monthly_reporting
+            mustBe: 4
+      transaction_type:
+        type: string
+        description: "The transaction type, and can have one of the following supported values: 'Sale' and 'Return'."
+        examples:
+          - Sale
+          - Return
+        quality:
+          - type: sql
+            description: Only two transaction types are allowed
+            dialect: bigquery
+            query: |
+              SELECT COUNT(DISTINCT transaction_type) FROM common_sales_monthly_reporting
+            mustBe: 2
+      payment_method:
+        type: string
+        description: "The payment method, and can have one of the following supported values: 'Credit Card' and 'Cash'."
+        examples:
+          - Credit Card
+          - Cash
+        quality:
+          - type: sql
+            description: Only two payment methods are allowed
+            dialect: bigquery
+            query: |
+              SELECT COUNT(DISTINCT payment_method) FROM common_sales_monthly_reporting
+            mustBe: 2
+      product_category:
+        type: string
+        description: "The category of the product that was sold and can have one of the following three values: 'Feminine', 'Masculine' and 'Children'."
+        examples:
+          - Feminine
+          - Masculine
+          - Children
+        quality:
+          - type: sql
+            description: Only three product categories are allowed
+            dialect: bigquery
+            query: |
+              SELECT COUNT(DISTINCT product_category) FROM common_sales_monthly_reporting
+            mustBe: 3
+      quantity:
+        type: integer
+        description: The quantity of products that was sold.
+        examples:
+          - 364
+          - 13977
+      sales_amount:
+        type: float
+        description: The sales amount in local currency.
+        examples:
+          - 201012.6
+          - -127340.09
+          - 17834.2
+      sales_amount_usd:
+        type: float
+        description: The sales amount in USD currency.
+        examples:
+          - 12197.15
+          - 17834.31
+      production_cost_amount:
+        type: numeric
+        description: The production cost amount in local currency.
+        examples:
+          - 7433.45
+          - 502.09
+      production_cost_amount_usd:
+        type: numeric
+        description: The production cost amount in USD currency.
+        examples:
+          - 634.33
+          - -418129.23
+      profit_amount:
+        type: float
+        description: The profit amount in the local currency.
+        examples:
+          - -74030.33
+          - 269111.78
+      profit_amount_usd:
+        type: float
+        description: The profit amount in USD currency.
+        examples:
+          - 17715.64
+          - -4091.92
+      store_gps_coordinates:
+        type: string
+        description: The GPS coordinates of the store.
+        config:
+          bigqueryType: GEOGRAPHY
+        examples:
+          - POINT(121.4737 31.2304)
+          - POINT(113.2644 23.1291)
+    quality:
+      - type: sql
+        description: Row Count
+        query: |
+          SELECT COUNT(*) AS row_count FROM common_sales_monthly_reporting
+        mustBeGreaterThanOrEqualTo: 11300
+    examples:
+      - |
+        asas
+
+### definitions
+
+definitions:
+  store_id:
+    title: Store ID
+    type: integer
+    description: The Store ID is an internal unique identifier for a store.
+    examples:
+      - 8
+      - 29
+    pii: false
+    classification: public
+
+servicelevels:
+  availability:
+    description: The server is available during support hours
+    percentage: 99.9%
+  retention:
+    description: Data is retained forever because we need historical sales data
+    period: P999Y
+    unlimited: false
+  latency:
+    description: Data is available within 1 month after the order was placed
+    threshold: P1M
+    sourceTimestampField: common_sales_monthly_reporting.first_day_of_the_month
+    processedTimestampField: common_sales_monthly_reporting.first_day_of_the_month
+  freshness:
+    description: The age of the youngest row in a table.
+    threshold: PT1Y
+    timestampField: common_sales_monthly_reporting.first_day_of_the_month
+  frequency:
+    description: Data is delivered once a month
+    type: batch # or streaming
+    interval: monthly # for batch, either or cron
+    cron: 0 0 1 * * # for batch, either or interval
+  support:
+    description: The data is available during typical business hours at headquarters
+    time: 9am to 5pm in EST on business days
+    responseTime: 5s
+  backup:
+    description: Data is backed up once a week, every Sunday at 0:00 UTC.
+    interval: weekly
+    cron: 0 0 * * 0
+    recoveryTime: 24 hours
+    recoveryPoint: 1 week
+
+
+tags:
+  - sales
+  - orders
+  - transactions
+  - stores
+  - bigquery
+links:
+  datacontractCli: https://cli.datacontract.com

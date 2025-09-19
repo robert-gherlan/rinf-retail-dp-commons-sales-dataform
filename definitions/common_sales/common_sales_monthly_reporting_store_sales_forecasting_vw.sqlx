@@ -11,10 +11,10 @@ SELECT
   country_name,
   EXTRACT(DATE FROM forecast_timestamp) AS first_day_of_the_month,
   forecast_value AS sales_amount_usd
-FROM
-  ML.FORECAST (
-    MODEL `rinf-retail-dp-commons-sales.common_sales.common_sales_monthly_reporting_store_sales_forecasting_model`,
+FROM ML.FORECAST (
+    MODEL ${ref("common_sales_monthly_reporting_store_sales_forecasting_model")},
     -- 12 represents the number of months for which the sales are forecasted.
+    -- The 0.95 as the confidence level, the value that specifies the percentage of the future values that fall in the prediction interval.
     STRUCT (12 AS horizon, 0.95 AS confidence_level),
     (
       SELECT
@@ -22,3 +22,7 @@ FROM
       FROM ${ref("common_sales_monthly_reporting")}
     )
   )
+
+post_operations {
+  GRANT `roles/bigquery.dataViewer` ON TABLE ${self()} TO "serviceAccount:sa-bigquery@rinf-retail-dp-commons-sales.iam.gserviceaccount.com", "user:gherlanilierobert@gmail.com"
+}
