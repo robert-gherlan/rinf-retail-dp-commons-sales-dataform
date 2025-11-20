@@ -24,5 +24,5 @@ FROM ML.FORECAST (
   )
 
 post_operations {
-  GRANT `roles/bigquery.dataViewer` ON TABLE ${self()} TO "serviceAccount:sa-bigquery@rinf-retail-dp-commons-sales.iam.gserviceaccount.com", "user:gherlanilierobert@gmail.com"
+  GRANT `roles/bigquery.dataViewer` ON VIEW ${self()} TO "serviceAccount:sa-bigquery@rinf-retail-dp-commons-sales.iam.gserviceaccount.com", "user:gherlanilierobert@gmail.com"
 }
