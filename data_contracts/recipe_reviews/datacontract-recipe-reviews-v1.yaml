@@ -1,0 +1,183 @@
+dataContractSpecification: 1.2.1
+id: recipe-reviews-v1
+info:
+  title: Recipe Reviews Data Contract
+  version: 1.0.0
+  status: active
+  description: The data contract for the Recipe Reviews v1 data model.
+  owner: Recipe Reviews Team
+  contact:
+    name: Robert Gherlan
+    url: https://company_name.com/robert.gherlan
+    email: robert.gherlan@example.com
+
+
+servers:
+  production:
+    type: bigquery
+    project: rinf-retail-recipe-reviews
+    dataset: derived_recipe_reviews
+    environment: prod
+
+
+terms:
+  usage: |
+    Data can be used for reports, analytics and machine learning use cases.
+    Recipe Reviews data may be linked and joined by other tables.
+  limitations: |
+    Not suitable for real-time use cases, data being aggregated on a daily basis.
+    Data may not be used to identify individual authors.
+    Max data processing per month: 1 GB
+  policies:
+    - name: privacy-policy
+      url: https://example.com/privacy-policy
+    - name: license
+      description: External data is licensed under agreement 1234.
+      url: https://example.com/license/1234
+  billing: 50 USD per month
+  noticePeriod: P1M
+
+
+models:
+  recipe_reviews_v1:
+    description: The Recipe Reviews table that contains the derived data which is shared with the data consumers.
+    type: table
+    fields:
+      recipe_id:
+        $ref: '#/definitions/recipe_id'
+        required: true
+        unique: true
+        primaryKey: true
+      recipe_name:
+        type: string
+        description: The name of the recipe.
+        examples:
+          - Chili With Biscuits
+          - Red Pepper Spoon Bread
+      recipe_category:
+        type: string
+        description: The category of the recipe.
+        examples:
+          - Breads
+          - Beans
+      recipe_date_published:
+        type: timestamp
+        description: The timestamp when the recipe was published.
+        examples:
+          - 1999-09-08 05:35:00 UTC
+          - 1999-10-05 04:12:00 UTC
+      recipe_year_published:
+        type: integer
+        description: The calendar year when the recipe was published.
+        examples:
+          - 1999
+          - 2002
+      recipe_author_id:
+        $ref: '#/definitions/recipe_author_id'
+      recipe_author_name:
+        type: string
+        description: The full name of the author of the recipe.
+        examples:
+          - Mimi Hiller
+          - Carole Reu
+        pii: true
+        classification: sensitive
+      number_of_reviews:
+        type: integer
+        description: The number of reviews for the recipe.
+        examples:
+          - 121
+          - 0
+          - 2321
+      average_review_rating:
+        type: float
+        description: The average rating of the recipe based on all reviews.
+        examples:
+          - 1.2
+          - 4.5
+          - 3.8
+        quality:
+          - type: sql
+            description: The maximum average rating must be 5
+            dialect: bigquery
+            query: |
+              SELECT MAX(average_review_rating) FROM recipe_reviews_v1
+            mustBeLessThanOrEqualTo: 5
+          - type: sql
+            description: The minimum average rating must be 0
+            dialect: bigquery
+            query: |
+              SELECT MIN(average_review_rating) FROM recipe_reviews_v1
+            mustBe: 0
+    primaryKey:
+      - recipe_id
+    quality:
+      - type: sql
+        description: Row Count with SQL
+        query: |
+          SELECT COUNT(*) AS row_count FROM recipe_reviews_v1
+        mustBeGreaterThanOrEqualTo: 522517
+
+### definitions
+definitions:
+  recipe_id:
+    title: Recipe ID
+    type: integer
+    description: The recipe ID is an internal unique identifier for a recipe.
+    examples:
+      - 8
+      - 29
+    pii: false
+    classification: internal
+
+  recipe_author_id:
+    title: Recipe Author ID
+    type: integer
+    description: The recipe author ID is an internal unique identifier for a an author of a recipe.
+    examples:
+      - 1531
+      - 1533
+    pii: true
+    classification: sensitive
+
+servicelevels:
+  availability:
+    description: The server is available during support hours
+    percentage: 99.9%
+  retention:
+    description: Data is retained forever because we need historical data
+    period: P999Y
+    unlimited: false
+  latency:
+    description: Data is available within 1 month after the order was placed
+    threshold: P1M
+    sourceTimestampField: recipe_reviews_v1.recipe_date_published
+    processedTimestampField: recipe_reviews_v1.recipe_date_published
+  freshness:
+    description: The age of the youngest row in a table.
+    threshold: PT1Y
+    timestampField: recipe_reviews_v1.recipe_date_published
+  frequency:
+    description: Data is delivered daily
+    type: batch # or streaming
+    interval: daily # for batch, either or cron
+    cron: 0 0 1 * * # for batch, either or interval
+  support:
+    description: The data is available during typical business hours at headquarters
+    time: 9am to 5pm in EST on business days
+    responseTime: 5s
+  backup:
+    description: Data is backed up once a week, every Sunday at 0:00 UTC.
+    interval: weekly
+    cron: 0 0 * * 0
+    recoveryTime: 24 hours
+    recoveryPoint: 1 week
+
+
+tags:
+  - food
+  - recipe
+  - reviews
+  - bigquery
+links:
+  datacontractCli: https://cli.datacontract.com
