@@ -2163,6 +2163,8 @@ Max data processing per month: 1 GB
                       <tr>
                         <th scope="colgroup" colspan="3" class="py-2 pl-4 pr-3 text-left font-semibold text-gray-900 sm:pl-6">
                           
+                          Recipe Reviews V1
+                          
                           
                           <span class="font-mono font-medium">recipe_reviews_v1</span>
                           
@@ -2607,7 +2609,7 @@ Max data processing per month: 1 GB
   </td>
   <td class="px-3 py-2 text-sm text-gray-500 w-7/12">
     
-    <div class="text-gray-500">The name of the author.</div>
+    <div class="text-gray-500">The full name of the author of the recipe.</div>
     
 
     
@@ -2677,7 +2679,7 @@ Max data processing per month: 1 GB
   </td>
   <td class="px-3 py-2 text-sm text-gray-500 w-7/12">
     
-    <div class="text-gray-500">The number of reviews.</div>
+    <div class="text-gray-500">The number of reviews for the recipe.</div>
     
 
     
@@ -2745,7 +2747,7 @@ Max data processing per month: 1 GB
   </td>
   <td class="px-3 py-2 text-sm text-gray-500 w-7/12">
     
-    <div class="text-gray-500">The average rating based on all reviews</div>
+    <div class="text-gray-500">The average rating of the recipe based on all reviews.</div>
     
 
     
@@ -3348,7 +3350,7 @@ Max data processing per month: 1 GB
       </div>
 
       <div class="mt-6 text-sm text-gray-400">
-        Created at 27 Nov 2025 07:19:09 UTC with <a href="https://cli.datacontract.com" class="text-gray-400 hover:text-gray-500">Data Contract CLI</a> v0.10.39
+        Created at 28 Nov 2025 14:01:47 UTC with <a href="https://cli.datacontract.com" class="text-gray-400 hover:text-gray-500">Data Contract CLI</a> v0.10.39
       </div>
 
     </div>
@@ -3418,6 +3420,7 @@ models:
     description: The Recipe Reviews table that contains the derived data which is
       shared with the data consumers.
     type: table
+    title: Recipe Reviews V1
     fields:
       recipe_id:
         $ref: '#/definitions/recipe_id'
@@ -3469,7 +3472,7 @@ models:
         - 1533
       recipe_author_name:
         type: string
-        description: The name of the author.
+        description: The full name of the author of the recipe.
         pii: true
         classification: sensitive
         examples:
@@ -3477,14 +3480,14 @@ models:
         - Carole Reu
       number_of_reviews:
         type: integer
-        description: The number of reviews.
+        description: The number of reviews for the recipe.
         examples:
         - 121
         - 0
         - 2321
       average_review_rating:
         type: float
-        description: The average rating based on all reviews
+        description: The average rating of the recipe based on all reviews.
         examples:
         - 1.2
         - 4.5

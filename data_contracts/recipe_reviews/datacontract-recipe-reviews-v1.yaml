@@ -40,6 +40,7 @@ terms:
 
 models:
   recipe_reviews_v1:
+    title: Recipe Reviews V1 
     description: The Recipe Reviews table that contains the derived data which is shared with the data consumers.
     type: table
     fields:
